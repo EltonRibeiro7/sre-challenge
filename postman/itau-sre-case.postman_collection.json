@@ -1,0 +1,158 @@
+{
+	"info": {
+		"_postman_id": "ba2ce57c-63e9-41d3-912a-bff994a13ac7",
+		"name": "itau-sre-case",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get_all_breeds",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/breeds",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"breeds"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_breed_info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/breeds/awir",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"breeds",
+						"awir"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_breed_by_temperament",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/breeds/?temperament=Curious",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"breeds",
+						""
+					],
+					"query": [
+						{
+							"key": "temperament",
+							"value": "Curious"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_breed_by_origin",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/breeds?origin=United States",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"breeds"
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "United States"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_breed_err",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/breeds?err=test_error",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"breeds"
+					],
+					"query": [
+						{
+							"key": "err",
+							"value": "test_error"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_breed_bad_request",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/breeds?badrequest=1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"breeds"
+					],
+					"query": [
+						{
+							"key": "badrequest",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"id": "52d9a33b-35ab-40a6-a73e-39f3961cc89c",
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

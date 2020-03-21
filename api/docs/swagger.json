@@ -1,0 +1,251 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Itau SRE Case",
+    "description" : "Itau SRE Case",
+    "contact" : {
+      "email" : "eltonribeiro@outlook.com"
+    },
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version" : "1.0.3"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8000/api/v1/"
+  }, {
+    "url" : "https://localhost:8000/api/v1/"
+  } ],
+  "tags" : [ {
+    "name" : "developers",
+    "description" : "Operations available to regular developers"
+  } ],
+  "paths" : {
+    "/breeds" : {
+      "get" : {
+        "tags" : [ "developers" ],
+        "summary" : "get all breeds",
+        "operationId" : "searchBreeds",
+        "parameters" : [ {
+          "name" : "temperament",
+          "in" : "query",
+          "description" : "list all breeds with a specific temperament",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "origin",
+          "in" : "query",
+          "description" : "list all breeds of a specific origin",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching criteria",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Breeds"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BadRequest"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "empty query result",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotFoundRequest"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "server side error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/breeds/{id}" : {
+      "get" : {
+        "tags" : [ "developers" ],
+        "summary" : "get specific breed info",
+        "operationId" : "getBreedInfo",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "example" : "abys"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching criteria",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BreedItem"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BadRequest"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "empty query result",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotFoundRequest"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "server side error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "BadRequest" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "bad request"
+          }
+        }
+      },
+      "Breeds" : {
+        "type" : "array",
+        "items" : {
+          "$ref" : "#/components/schemas/Breed"
+        }
+      },
+      "Breed" : {
+        "type" : "object",
+        "properties" : {
+          "breed_id" : {
+            "type" : "string",
+            "example" : "abys"
+          },
+          "name" : {
+            "type" : "string",
+            "example" : "Abyssinian"
+          }
+        }
+      },
+      "NotFoundRequest" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "not found"
+          }
+        }
+      },
+      "ErrorRequest" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "error request"
+          }
+        }
+      },
+      "BreedItem" : {
+        "required" : [ "description", "name", "origin", "temperaments" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "example" : "abys"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Abyssinian is a breed"
+          },
+          "name" : {
+            "type" : "string",
+            "example" : "Abyssinian"
+          },
+          "origin" : {
+            "type" : "string",
+            "example" : "United States"
+          },
+          "images" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Image"
+            }
+          },
+          "temperament" : {
+            "type" : "string",
+            "example" : "Curious, Kind"
+          }
+        }
+      },
+      "Image" : {
+        "required" : [ "url" ],
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "example" : "zeKI28A21"
+          },
+          "url" : {
+            "type" : "string",
+            "example" : "https://cdn2.thecatapi.com/images/zeKI28A21.jpg"
+          }
+        }
+      }
+    }
+  }
+}

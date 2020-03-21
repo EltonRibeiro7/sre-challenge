@@ -1,0 +1,154 @@
+version: "3.7"
+
+services:
+  mysql:
+    image: mysql:8.0.19
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: case_db
+      MYSQL_USER: case_user
+      MYSQL_PASSWORD: case_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - "mysql_data:/var/lib/mysql"
+      - "./infra/mysql/create_case_db.sql:/docker-entrypoint-initdb.d/create_database.sql"
+    networks:
+      - case-network
+    healthcheck:
+      test: mysqladmin ping --silent
+      timeout: 10s
+      interval: 10s
+      retries: 5
+  
+  prometheus:
+    image: prom/prometheus:v2.17.0
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - case-network
+  
+  grafana:
+    image: grafana/grafana:6.7.1
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infra/grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - case-network
+    
+  elasticsearch:
+    image: elasticsearch:7.6.1
+    restart: unless-stopped
+    environment:
+      - 'discovery.type=single-node'
+      - 'bootstrap.memory_lock=true'
+      - 'logger.level=warn'
+      - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
+      - xpack.security.enabled=false
+    ports:
+      - 9200:9200
+    volumes:
+      - "elasticsearch_data:/usr/share/elasticsearch/data"
+    networks:
+        - case-network
+
+  fluentd:
+    build:
+      context: ./infra/fluentd
+      dockerfile: ./Dockerfile
+    image: fluentd:v1.9.1-1.0
+    restart: unless-stopped
+    depends_on:
+        - elasticsearch
+    ports:
+        - 24224:24224
+        - 24224:24224/udp
+    networks:
+        - case-network
+
+  kibana:
+    image: kibana:7.6.1
+    restart: unless-stopped
+    environment:
+      - 'logger.level=warn'
+    ports:
+      - 5601:5601
+    networks:
+      - case-network
+    depends_on:
+      - fluentd
+
+  syncronizer:
+    build:
+      context: ./
+      dockerfile: ./syncronizer/Dockerfile
+    image: syncronizer
+    restart: unless-stopped
+    environment:
+      CASE_LOGGING_LEVEL: INFO 
+      CASE_REQUEST_KEY: afc36b2f-de9c-4db0-afe2-a4c54ee843e0
+      CASE_REQUEST_TIMEOUT: 30
+      CASE_EXECUTION_INTERVAL_MINUTES: 1
+      CASE_DB_HOST: mysql
+      CASE_DB_PORT: 3306
+      CASE_DB_NAME: case_db
+      CASE_DB_PASSWORD: case_pass
+      CASE_DB_USER: case_user
+      CASE_HTTP_PORT: 8001
+    ports:
+      - "8001:8001"
+    networks:
+      - case-network
+    depends_on:
+      - mysql
+      - fluentd
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: docker.syncronizer
+        
+  api:
+    build:
+      context: ./
+      dockerfile: ./api/Dockerfile
+    image: api
+    restart: unless-stopped
+    environment:
+      CASE_LOGGING_LEVEL: DEBUG 
+      CASE_DB_HOST: mysql
+      CASE_DB_PORT: 3306
+      CASE_DB_NAME: case_db
+      CASE_DB_PASSWORD: case_pass
+      CASE_DB_USER: case_user
+      CASE_HTTP_PORT: 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - case-network
+    depends_on:
+      - mysql
+      - fluentd
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: docker.api
+
+networks:
+  case-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  grafana_data:
+  elasticsearch_data:

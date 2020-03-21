@@ -1,0 +1,73 @@
+version: 2.1
+
+jobs:
+  api-image-build-and-push:
+    docker:
+      - image: circleci/python:3.7.4
+    resource_class: small
+    working_directory: ~/itau-sre-case
+    steps:
+      - checkout:
+          path: ~/itau-sre-case
+      - setup_remote_docker:
+          name: Setup Remote Docker Registry Login
+          docker_layer_caching: false
+      - run: 
+          name: Docker Login
+          command: docker login -u ${DOCKER_REGISTRY_USERNAME} -p ${DOCKER_REGISTRY_PASSWORD}
+      - run: 
+          name: Docker Image Build
+          command: |
+            ls -larth
+            pwd
+            docker build -t ${DOCKER_NAMESPACE}/sre-case-api:${CIRCLE_TAG} --file ./api/Dockerfile .
+      - run:
+          name: Docker Image Push
+          command: |
+            TAG=${CIRCLE_CI}
+            docker image push ${DOCKER_NAMESPACE}/sre-case-api:${CIRCLE_TAG}
+
+  syncronizer-image-build-and-push:
+    docker:
+      - image: circleci/python:3.7.4
+    resource_class: small
+    working_directory: ~/itau-sre-case
+    steps:
+      - checkout:
+          path: ~/itau-sre-case
+      - setup_remote_docker:
+          name: Setup Remote Docker Registry Login
+          docker_layer_caching: false
+      - run: 
+          name: Docker Login
+          command: docker login -u ${DOCKER_REGISTRY_USERNAME} -p ${DOCKER_REGISTRY_PASSWORD}
+      - run: 
+          name: Docker Image Build
+          command: |
+            ls -larth
+            pwd
+            docker build -t ${DOCKER_NAMESPACE}/sre-case-syncronizer:${CIRCLE_TAG} --file ./syncronizer/Dockerfile .
+      - run:
+          name: Docker Image Push
+          command: |
+            TAG=${CIRCLE_CI}
+            docker image push ${DOCKER_NAMESPACE}/sre-case-syncronizer:${CIRCLE_TAG}
+
+workflows:
+  itau-sre-pipeline:
+    jobs:
+      - api-image-build-and-push:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only:
+                - /v[0-9]+\.[0-9]+\.[0-9]+/
+      - syncronizer-image-build-and-push:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only:
+                - /v[0-9]+\.[0-9]+\.[0-9]+/
+
