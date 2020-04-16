@@ -1,4 +1,4 @@
-# **SRE Case - thecatapi.com**
+# **SRE CHALLENGE - thecatapi.com**
 
 ## **OVERVIEW**
 
